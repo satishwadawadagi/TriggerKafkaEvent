@@ -18,7 +18,7 @@ jobs:
 
       # ---------------- Identify tenant ----------------
       - name: Extract Tenant
-        shell: pwsh
+        shell: powershell
         run: |
           $BRANCH = $env:GITHUB_REF_NAME
           $TENANT = $BRANCH.Split('/')[0]
@@ -50,13 +50,8 @@ jobs:
       # ---------------- Deploy using Helm ----------------
       - name: Deploy to Kubernetes
         run: |
-          helm upgrade --install webapp ./charts/webapp \
-            --namespace $TENANT \
-            --create-namespace \
-            -f ./charts/webapp/${TENANT}-values.yaml \
-            --set image.repository=$REGISTRY/${{ github.repository }}/$IMAGE_NAME \
-            --set image.tag=$GITHUB_SHA \
-            --wait --timeout 120s
+          helm upgrade --install webapp ./charts/webapp --namespace $TENANT --create-namespace -f ./charts/webapp/${TENANT}-values.yaml `
+            --set image.repository=$REGISTRY/${{ github.repository }}/$IMAGE_NAME --set image.tag=$GITHUB_SHA --wait --timeout 120s
 
       # ---------------- Verify Deployment ----------------
       - name: Check Rollout Status
