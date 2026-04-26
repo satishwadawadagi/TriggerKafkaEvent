@@ -12,7 +12,7 @@ RUN npm install --only=production
 COPY . .
 
 # ---------- Expose Port ----------
-EXPOSE 3000
+EXPOSE 4000
 
 # ---------- Healthcheck ----------
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://localhost:3000/health || exit 1
