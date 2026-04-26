@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: docker.io/satishwadawadagi/mutitenantwebapp
+  repository: docker.io/satishwadawadagi/multi-tenant-webapp
   tag: latest
 
 service:
