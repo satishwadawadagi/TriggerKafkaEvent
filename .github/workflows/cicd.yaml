@@ -7,7 +7,7 @@ permissions:
   packages: write
   
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: docker.io
   IMAGE_NAME: multi-tenant-webapp
 
 jobs:
@@ -30,6 +30,12 @@ jobs:
           echo "TENANT=$TENANT" >> $env:GITHUB_ENV
           Write-Host "Deploying to namespace: $TENANT"
 
+      # ---------------- Login to Docker ----------------
+      - name: Login to Docker Hub
+        shell: powershell
+        run: |
+          #echo "${{ secrets.DOCKER_PASSWORD }}" | podman login docker.io -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
       # ---------------- Build Image (Podman) ----------------
       - name: Build Image
         shell: powershell
@@ -40,27 +46,19 @@ jobs:
       - name: Tag Image
         shell: powershell
         run: |
-          podman tag ${env:IMAGE_NAME}:${env:GITHUB_SHA} ${env:REGISTRY}/${{ github.repository }}/${env:IMAGE_NAME}:${env:GITHUB_SHA}
-
-      # ---------------- Login to GHCR ----------------
-      - name: Login to GHCR
-        shell: powershell
-        run: |
-          #echo "${{ secrets.GHCR_PAT }}" | podman login ghcr.io -u satishwadawadagi --password-stdin
-          $token = "${{ secrets.GHCR_PAT }}"
-          $token | podman login ghcr.io -u satishwadawadagi --password-stdin
+          podman tag ${env:IMAGE_NAME}:${env:GITHUB_SHA} docker.io/${{ secrets.DOCKER_USERNAME }}/${env:IMAGE_NAME}:${env:GITHUB_SHA}
 
       # ---------------- Push Image ----------------
       - name: Push Image
         shell: powershell
         run: |
-          podman push ${env:REGISTRY}/${{ github.repository }}/${env:IMAGE_NAME}:${env:GITHUB_SHA}
+          podman push docker.io/${{ secrets.DOCKER_USERNAME }}/${env:IMAGE_NAME}:${env:GITHUB_SHA}
 
       # ---------------- Deploy using Helm ----------------
       - name: Deploy to Kubernetes
         run: |
           helm upgrade --install webapp ./charts/webapp --namespace $TENANT --create-namespace -f ./charts/webapp/${TENANT}-values.yaml `
-            --set image.repository=$REGISTRY/${{ github.repository }}/$IMAGE_NAME --set image.tag=$GITHUB_SHA --wait --timeout 120s
+            --set image.repository=docker.io/${{ secrets.DOCKER_USERNAME }}/multi-tenant-webapp --set image.tag=$GITHUB_SHA --wait --timeout 120s
 
       # ---------------- Verify Deployment ----------------
       - name: Check Rollout Status
