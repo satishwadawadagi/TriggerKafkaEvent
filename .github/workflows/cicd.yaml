@@ -9,6 +9,7 @@ permissions:
 env:
   REGISTRY: docker.io
   IMAGE_NAME: multi-tenant-webapp
+  TENANT: user1
 
 jobs:
   deploy:
